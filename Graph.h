@@ -1,5 +1,5 @@
 //
-//Graph ---- class
+//Graph class header
 //
 
 #ifndef PROYECTO_FINAL_GRAPH_H
@@ -12,31 +12,35 @@
 #include <fstream>
 
 using namespace std;
+//namesppcese to bue used for typename simplification
 using  uint = unsigned int;
 using  str =  string;
 using  umap = unordered_map<str, int>;
 
+// Cointainer node struct
 struct Node{
-    str id;
-    vector<int> politicalTendence;
-    Node( str id){
+    str id; // ID field
+    vector<int> politicalTendency; // vector of political tendency with 4 components (1 for each tendency)
+    Node( str id){ // Node class constructor
         this->id = id;
-        politicalTendence.resize(4);
-        politicalTendence = {0, 0, 0, 0};
+        politicalTendency.resize(4); // Array dimension
+        politicalTendency = {0, 0, 0, 0}; // initial percentage
     }
 };
 
 
 class Graph {
 private:
-    umap ref;
-    vector<vector<Node>> graph;
+    umap ref; // hash table to associate the ID field with the position in the list
+    unordered_map<int, str> inverse_ref; // From position to ID
+    vector<vector<Node>> graph; // list od adjacency
 
 public:
-    Graph();
-    bool insert (str vertex, str junctions);
-    void print();
-    ~Graph();
+    Graph(); // Class constructor
+    void insert (str vertex, str junctions); // insert in graph
+    void print(); // print graph
+    vector<pair<str, int>> topInfluencer (int n);
+    ~Graph(); // class destructor
 
 };
 
