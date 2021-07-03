@@ -7,7 +7,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-
+#include <deque>
 #include <string>
 #include <fstream>
 
@@ -20,12 +20,10 @@ using  umap = unordered_map<str, int>;
 // Cointainer node struct
 struct Node{
     str id; // ID field
-    vector<int> politicalTendency; // vector of political tendency with 4 components (1 for each tendency)
-    Node( str id){ // Node class constructor
-        this->id = id;
-        politicalTendency.resize(4); // Array dimension
-        politicalTendency = {0, 0, 0, 0}; // initial percentage
-    }
+    int pos;
+    deque<Node *> followers;
+    vector<double> politicalTendency; // vector of political tendency with 4 components (1 for each tendency)
+
 };
 
 
@@ -33,13 +31,15 @@ class Graph {
 private:
     umap ref; // hash table to associate the ID field with the position in the list
     unordered_map<int, str> inverse_ref; // From position to ID
-    vector<vector<Node>> graph; // list od adjacency
-
+    vector<Node> graph; //adjacency list
+    void politicalTendenceCalc (int tendence);
 public:
     Graph(); // Class constructor
     void insert (str vertex, str junctions); // insert in graph
-    void print(); // print graph
+    void print(int n); // print graph
     vector<pair<str, int>> topInfluencer (int n);
+    vector<pair<str, int>> topInfluenced (int n);
+    vector<Node> influenceColorMap ();
     ~Graph(); // class destructor
 
 };
