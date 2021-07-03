@@ -28,12 +28,13 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
         j = read.find(";", read.find(";") + 1); // find usr name end
         str result(read.begin() + k + 1, read.begin() + j); // extract the usr name
         this->ref.insert(pair<str, int>(result, i - 1)); // insert into the hash table
-        this->inverse_ref.insert(pair<int, str>(i - 1, result));
+        this->graph.push_back({result, i - 1, 0});
+        graph[i - 1].politicalTendency.resize(4);
+        graph[i - 1].politicalTendency = {0, 0, 0, 0};
         i++;
 
     }
     f.close();
-    graph.resize(ref.size()); // resizing to the number of vertexes
     f.open(junctions); // reading the connections
     i = 0;
     while (getline(f, read)){  // reading the lines
@@ -45,10 +46,8 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
         str followee(read.begin(), read.begin() + k); // extracting followee
         str follower(read.begin() + k + 1, read.end()); // extracting follower
         umap::iterator it = ref.find(followee); // find the table position by  the id
-        //cout << it->second << endl;
-        Node n (follower); // create a new node
-
-        graph[it->second].push_back(n); // insert into the graph O(1) amortized time;
+        umap::iterator it2 = ref.find(follower);
+        graph[it->second].followers.push_front(&graph[it2->second]); // insert into the graph O(1) amortized time;
         i ++;
 
 
@@ -56,93 +55,73 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
     f.close();
 }
 
-vector<pair<str, int>> Graph::topInfluencer (int cant){ // Compute the n most influencer user. (The user with more followers)
-
-    auto comp = [](pair<int, vector<Node>> a, pair<int, vector<Node>> b) ->bool { // Lambda func for priority queue comparator
-        return a.second.size() < b.second.size(); // ordered by vector sizes (number of followers)
+vector<Node> Graph::topInfluencer (int cant){ // Compute the n most influencer user. (The user with more followers)
+    vector<Node> result = graph;
+    auto comp = [] (Node a, Node b)->bool {
+        return a.followers.size() > b.followers.size();
     };
-    priority_queue<pair <int, vector<Node>>, vector<pair <int, vector<Node>>>, decltype(comp)> top(comp); // priority queue for order
-    for (int i = 0; i < graph.size(); ++i) { // Through all the vertexes O(V)
-        top.push(pair<int, vector<Node>>(i, graph[i]));// O(log(V))
+    sort(result.begin(), result.end(), comp);
+    return vector<Node>(result.begin(), result.begin() + cant );
 
-        // O(Vlog(V)
-    }
-
-    vector<pair<str, int>> topN (cant); // output vector
-    int i = 0; // counter
-    int k; // inverse key container
-    unordered_map<int, str>::iterator it; // unordered map iterator to dereference
-
-    ranking: // ranking loop
-    k = top.top().first; // extract the influencest
-    it = inverse_ref.find(k); // dereference from secondary key
-    topN[i] =pair<str, int> (it->second, top.top().second.size()); // insert in output vector
-    top.pop(); // extract from queue
-    cant --; // decrees loop counter
-    i ++; // increase the allocation counter
-    if (cant != 0 and !top.empty()) goto ranking; // if ranking isn't complete and queue is no empty -> repeat ranking loop
-
-    return topN;
 }
 
-vector<pair<str, int>> Graph::topInfluenced(int n) {
-    vector<pair<str, int>> result (graph.size());
-    for (int i = 0; i < result.size(); ++i) {
-        result[i].first = inverse_ref.find(i)->second;
-        result[i].second = 0;
-    }
-    int k;
-    for (int i = 0; i < graph.size(); ++i) {
-        for (int j = 0; j < graph[i].size(); ++j) {
-            k = ref.find(graph[i][j].id)->second;
-            result[k].second++;
+vector<Node> Graph::topInfluenced(int n) {
+    cout << "Holis\n";
+    for (Node i : graph){
+        for (auto j: i.followers){
+            j->following ++;
         }
     }
-
-    auto sort = [](pair<str, int> a, pair<str, int> b)->bool {
-        return a.second > b.second;
-    };
-
-    std::sort(result.begin(), result.end(), sort);
-
-    return std::vector<pair<str, int>>(result.begin(), result.begin() + n);
-
+    cout << "Bye :(\n";
+    vector<Node> result = graph;
+    sort(result.begin(), result.end(), [](Node a, Node b)->bool {return a.following > b.following;});
+    cout << ":P\n";
+    return vector<Node>(result.begin(), result.begin() + n);
 }
 
-void Graph::politicalTendenceCalc(int node) {
-    queue<int> Q;
-    set<int> visited;
+void Graph::politicalTendenceCalc( str Magazine) {
+    int node = ref.find(Magazine)->second;
+    queue<Node> Q;
+    set <str> visited;
+    Node u;
+    int tendence;
     double politicalRank = 100;
-    int u, k;
-    Q.push(node);
-    visited.insert(node);
+    if (Magazine == "Cooperativa") tendence = 0;
+    if (Magazine == "soyvaldiviacl") tendence = 1;
+    if (Magazine == "latercera") tendence = 2;
+    else tendence = 3;
+    Q.push(graph[node]);
+    visited.insert(graph[node].id);
     while (!Q.empty()){
         u = Q.front();
         Q.pop();
-        for (Node i : graph[u]) {
-            k = ref.find(i.id)->second;
-            if (visited.find(k) == visited.end()){
-                visited.insert(ref.find(i.id)->second);
-                Q.push(ref.find(i.id)->second);
+        for (auto i : u.followers){
+            if (visited.find(i->id) == visited.end()){
+                Q.push(*i);
+                visited.insert(i->id);
             }
-            i.politicalTendency[node] += politicalRank;
+            i->politicalTendency[tendence] += politicalRank;
         }
-        politicalRank = politicalRank/2;
+        politicalRank = politicalRank / 2;
     }
+
 }
 
 vector<Node> Graph::influenceColorMap() {
 
 }
 
-void Graph::print( int n) { // print graph
-    for (int i = 0; i < n; ++i) {
-        cout << inverse_ref.find(i)->second << "--> ";
-        for (int j = 0; j < graph[i].size(); j++){
-            cout << graph[i][j].id << "--> ";
+void Graph::print() { // print graph
+    int k = 0;
+    for (auto i : graph) {
+        cout << i.id << " --> ";
+        for (auto j : i.followers){
+            cout << j->id << " --> ";
+            k ++;
         }
-        cout << endl;
+        cout << "NULL." << endl;
     }
+
 }
 
 Graph::~Graph() {
