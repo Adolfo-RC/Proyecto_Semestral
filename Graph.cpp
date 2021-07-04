@@ -187,8 +187,10 @@ void Graph::Kosaraju() {
         s.pop();
         if (vr.find(top.id) == vr.end()){
             T.recursiveDFS(top, &vr);
+
             k++;
         }
+
     }
     cout << vr.size() << " " << graph.size() << endl;
     cout << k << " SCCs."<< endl;
@@ -197,19 +199,16 @@ void Graph::Kosaraju() {
 
 
 Graph Graph::transpose() {
-    Graph T;
-    T.graph = graph;
-    for (int i = 0; i < graph.size(); ++i) {
-        T.graph[i].followers.clear();
-        T.graph[i].followers.resize(0);
+    Graph T = *this;
+    for (auto i : T.graph){
+        i.followers.clear();
     }
-    int ind;
-    for (int i = 0; i < graph.size(); ++i) {
-        for (int j = 0; j < graph[i].followers.size(); ++j) {
-            ind = graph[i].followers.at(j)->pos;
-            T.graph[ind].followers.push_front(&graph[i]);
+    for (auto i : graph){
+        for (auto j : i.followers){
+            T.graph[j->pos].followers.push_front(&i);
         }
     }
+    return T;
 
 }
 
