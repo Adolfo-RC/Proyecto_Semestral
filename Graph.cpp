@@ -56,61 +56,63 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
     f.close();
 }
 
-vector<Node> Graph::topInfluencer (int cant){ // Compute the n most influencer user. (The user with more followers)
-    vector<Node> result = graph;
-    auto comp = [] (Node a, Node b)->bool {
-        return a.followers.size() > b.followers.size();
+vector<Node> Graph::topInfluencer (int cant){ // Compute the n most influencer users. (The users with more followers)
+    vector<Node> result = graph; // Result vector
+    auto comp = [] (Node a, Node b)->bool { // lambda comparator func
+        return a.followers.size() > b.followers.size(); // if number of followers is bigger
     };
-    sort(result.begin(), result.end(), comp);
-    return vector<Node>(result.begin(), result.begin() + cant );
+    sort(result.begin(), result.end(), comp); // sort graph by followers
+    return vector<Node>(result.begin(), result.begin() + cant ); // return sorted vector
 
 }
 
-vector<Node> Graph::topInfluenced(int n) {
+
+vector<Node> Graph::topInfluenced(int n) { // Compute the n most influneced users (Useres following more people)
 
     for (Node i : graph){
         for (auto j: i.followers){
-            j->following ++;
+            j->following ++; // If user appears in other user list of followers
         }
     }
-    vector<Node> result = graph;
-    sort(result.begin(), result.end(), [](Node a, Node b)->bool {return a.following > b.following;});
-    return vector<Node>(result.begin(), result.begin() + n);
+    vector<Node> result = graph; // result vector
+    sort(result.begin(), result.end(), [](Node a, Node b)->bool {return a.following > b.following;}); // sorted by following field
+    return vector<Node>(result.begin(), result.begin() + n); // return sorted vector
 }
 
-void Graph::politicalTendenceCalc( str Magazine) {
-    int node = ref.find(Magazine)->second;
+void Graph::politicalTendencyCalc(str Magazine) { // Computes the political tendency for all user. BFS run
+    int node = ref.find(Magazine)->second; // Find node pos by id
 
-    queue<Node> Q;
-    set <str> visited;
-    Node u = graph[node];
-    u.polPow = 200.0;
-    Q.push(u);
-    visited.insert(graph[node].id);
+    queue<Node> Q; // BFS queue
+    set <str> visited; // visited set
+    Node u = graph[node]; // Start node
+    u.polPow = 200.0; // Initial polPow
+    Q.push(u); // Insert u into queue
+    visited.insert(graph[node].id); // mark u as visited
 
-    int h = 0;
-    while (!Q.empty()){
-        u = Q.front();
+    // Coloring the graph
+    while (!Q.empty()){ // While elements in queue
+        u = Q.front(); // u = first inserted element
 
-        Q.pop();
-        for (auto i : u.followers){
-            if (visited.find(i->id) == visited.end()){
-                i->politicalTendency[node] = u.polPow/2;
-                i->polPow = u.polPow / 2;
-                Q.push(*i);
-                visited.insert(i->id);
+        Q.pop(); // extarct from queue
+        for (auto i : u.followers){ // for all the children
+            if (visited.find(i->id) == visited.end()){ // if the instance has not been visited yet
+                i->politicalTendency[node] = u.polPow/2; // Assign half of the political power of his parent to the current political tendency
+                i->polPow = u.polPow / 2; // And to his own political power
+                Q.push(*i); // inert i to queue
+                visited.insert(i->id); // mark i as visitied
 
-                //cout << i->polPow << endl;
             }
 
         }
 
-        h++;
+
     }
 
 
 
 }
+
+// A dummy sum func
 double sum (vector<double> a){
     double res = 0;
     for (double j : a){
@@ -118,97 +120,91 @@ double sum (vector<double> a){
     }
     return res;
 }
-vector<Node> Graph::influenceColorMap() {
-    politicalTendenceCalc("Cooperativa");
-    politicalTendenceCalc("soyvaldiviacl");
-    politicalTendenceCalc("latercera");
-    politicalTendenceCalc("elmostrador");
+vector<Node> Graph::influenceColorMap() { // Color all the graph by his political influence
+    politicalTendencyCalc("Cooperativa"); // right
+    politicalTendencyCalc("soyvaldiviacl"); // libertarian
+    politicalTendencyCalc("latercera"); // right
+    politicalTendencyCalc("elmostrador"); // center
 
-    double s = 0;
-    for (Node i : graph){
-        s = sum(i.politicalTendency);
+    double s = 0; // sum
+    for (Node i : graph){ // for every node in graph
+        s = sum(i.politicalTendency); // sum his influences
         cout << " Political tendency " << i.id << ": ";
-        for (double j : i.politicalTendency){
-            j = (j / s) * 100;
+        for (double j : i.politicalTendency){ // for every component in his political tendency
+            j = (j / s) * 100; // % of influence
             cout << j << "% ";
         }
         cout <<endl;
     }
-    return graph;
+    return graph; // return the graph modified.
 
 }
 
-void Graph::recursiveDFS(Node n, set<str>* vis) {
+void Graph::recursiveDFS(Node n, set<str>* vis) { // DFS without stack implementation
     //cout << n.id << " --> ";
 
-    vis->insert(n.id);
-    for (auto i : n.followers){
+    vis->insert(n.id); // set node as visited
+    for (auto i : n.followers){ // for every children
         if (vis->find(i->id) == vis->end()){
-            recursiveDFS(*i, vis);
+            recursiveDFS(*i, vis); // recursive call
         }
     }
 }
 
 
 
-void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) {
+void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) { // DFS with stack for Kosaraju
     vis->insert(n.id);
     for (auto i : n.followers){
         if (vis->find(i->id) == vis->end()){
-            recursiveDFS(*i, vis, s);
+            recursiveDFS(*i, vis, s); // same of recursiveDEFS
         }
     }
-    //cout << vis->size() << " " << graph.size() << endl;
-    s->push(n);
-    /*for (auto i : graph){
-        if (vis->find(i.id) == vis->end()){
-            recursiveDFS(i, vis, s);
-        }
-    }*/
+    s->push(n); // When node is done insert node to stack
+
 }
 
-void Graph::Kosaraju() {
-    stack<Node> s;
-    set<str> vis;
-    recursiveDFS(graph[0], &vis, &s );
-    //cout << graph.size() << " " << vis.size() << endl;
-    for (Node i : graph){
-        if (vis.find(i.id) == vis.end()){
-            recursiveDFS(i, &vis, &s);
-        }
-        //cout << "\t" << i.id << " " << graph.size() << " " << s.size() << endl;
-        if (graph.size() == vis.size()) break;
-    }
-    Graph T = this->transpose();
-    set<str> vr;
-    int k = 0;
-    while (!s.empty()){
-        Node top = s.top();
-        s.pop();
-        if (vr.find(top.id) == vr.end()){
-            T.recursiveDFS(top, &vr);
+void Graph::Kosaraju() { // Kosaraju
+    stack<Node> s; // stack needed
+    set<str> vis; // set for direct DFS
+    recursiveDFS(graph[0], &vis, &s ); // direct recursive call
 
-            k++;
+    for (Node i : graph){ // For every node
+        if (vis.find(i.id) == vis.end()){ // that has not been visited
+            recursiveDFS(i, &vis, &s); // run dfs from that node
+        }
+        if (graph.size() == vis.size()) break; // if all node has been visited -> end;
+    }
+    Graph T = this->transpose(); // Inverse graph
+    vis.clear(); // clear set for inverse run
+    int k = 0; // SCC counter
+    while (!s.empty()){ // While elements in stack
+        Node top = s.top(); // first node in stack
+        s.pop(); // un - pile node
+        if (vis.find(top.id) == vis.end()){ // if has benn not visited
+            T.recursiveDFS(top, &vis); // DFS from node
+
+            k++; // increase SCC counter
         }
 
     }
-    cout << vr.size() << " " << graph.size() << endl;
+    cout << vis.size() << " " << graph.size() << endl;
     cout << k << " SCCs."<< endl;
 }
 
 
 
-Graph Graph::transpose() {
-    Graph T = *this;
-    for (auto i : T.graph){
-        i.followers.clear();
+Graph Graph::transpose() { // Compute the inverse graph
+    Graph T = *this; //New graph = current graph
+    for (auto i : T.graph){ //for every node in new graph
+        i.followers.clear(); // clear hsi followers. A 0 node in list status is implicit.
     }
-    for (auto i : graph){
-        for (auto j : i.followers){
-            T.graph[j->pos].followers.push_front(&i);
+    for (auto i : graph){ // for every node in graph
+        for (auto j : i.followers){ // for every follower of current node
+            T.graph[j->pos].followers.push_front(&i); // Change follower for followee
         }
     }
-    return T;
+    return T; //  return graph
 
 }
 
