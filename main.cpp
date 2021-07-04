@@ -9,8 +9,8 @@ int main() {
                  "/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/twitter_connections.csv");
 
 
-    vector<Node> k = tweet.influenceColorMap();
-
+    //vector<Node> k = tweet.influenceColorMap();
+    tweet.Kosaraju();
     //tweet.print();
 
     return 0;

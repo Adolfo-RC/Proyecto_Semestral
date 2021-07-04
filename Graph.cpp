@@ -4,6 +4,7 @@
 
 #include "Graph.h"
 #include <queue>
+#include <stack>
 #include <algorithm>
 #include <set>
 
@@ -137,6 +138,48 @@ vector<Node> Graph::influenceColorMap() {
     }
     return graph;
 
+}
+
+void Graph::recursiveDFS(Node n, set<str>* vis) {
+    vis->insert(n.id);
+    for (auto i : n.followers){
+        if (vis->find(i->id) == vis->end()){
+            recursiveDFS(*i, vis);
+        }
+    }
+}
+
+
+
+void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) {
+    vis->insert(n.id);
+    for (auto i : n.followers){
+        if (vis->find(i->id) == vis->end()){
+            recursiveDFS(*i, vis, s);
+        }
+    }
+    s->push(n);
+}
+
+void Graph::Kosaraju() {
+    stack<Node> s;
+    set<str> vis;
+    recursiveDFS(graph[0], &vis, &s);
+    transpose();
+}
+
+Graph Graph::transpose() {
+    Graph T;
+    T.graph = graph;
+    for (int i = 0; i < graph.size(); ++i) {
+        T.graph[i].followers.clear();
+        T.graph[i].followers.resize(0);
+    }
+    for (int i = 0; i < graph.size(); ++i) {
+        for (int j = 0; j < graph[i].followers.size(); ++j) {
+            T.graph[i] =
+        }
+    }
 }
 
 void Graph::print() { // print graph

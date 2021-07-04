@@ -11,7 +11,8 @@
 #include <deque>
 #include <string>
 #include <fstream>
-
+#include <set>
+#include <stack>
 using namespace std;
 //namesppcese to bue used for typename simplification
 using uint = unsigned int;
@@ -37,6 +38,9 @@ private:
     vector<Node> graph; //adjacency list
     void politicalTendenceCalc(str);
 
+    void recursiveDFS (Node n, set <str> * vis, stack<Node> * s );
+    Graph transpose ();
+
 public:
     Graph(); // Class constructor
     void insert(str vertex, str junctions); // insert in graph
@@ -46,6 +50,9 @@ public:
     vector<Node> topInfluenced(int n);
 
     vector<Node> influenceColorMap ();
+
+    void recursiveDFS (Node, set<str> *);
+    void Kosaraju ();
     ~Graph(); // class destructor
 
 };
