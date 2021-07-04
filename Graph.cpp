@@ -139,7 +139,8 @@ vector<Node> Graph::influenceColorMap() {
 }
 
 void Graph::recursiveDFS(Node n, set<str>* vis) {
-    cout << n.id << " --> ";
+    //cout << n.id << " --> ";
+
     vis->insert(n.id);
     for (auto i : n.followers){
         if (vis->find(i->id) == vis->end()){
@@ -157,27 +158,40 @@ void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) {
             recursiveDFS(*i, vis, s);
         }
     }
+    //cout << vis->size() << " " << graph.size() << endl;
     s->push(n);
+    /*for (auto i : graph){
+        if (vis->find(i.id) == vis->end()){
+            recursiveDFS(i, vis, s);
+        }
+    }*/
 }
 
 void Graph::Kosaraju() {
     stack<Node> s;
     set<str> vis;
-    recursiveDFS(graph[0], &vis, &s);
-
-    set<str> vr;
+    recursiveDFS(graph[0], &vis, &s );
+    //cout << graph.size() << " " << vis.size() << endl;
+    for (Node i : graph){
+        if (vis.find(i.id) == vis.end()){
+            recursiveDFS(i, &vis, &s);
+        }
+        //cout << "\t" << i.id << " " << graph.size() << " " << s.size() << endl;
+        if (graph.size() == vis.size()) break;
+    }
     Graph T = this->transpose();
+    set<str> vr;
+    int k = 0;
     while (!s.empty()){
         Node top = s.top();
         s.pop();
         if (vr.find(top.id) == vr.end()){
-            cout << "SCC: \n";
             T.recursiveDFS(top, &vr);
-            cout << endl;
-            cout << endl;
+            k++;
         }
-
     }
+    cout << vr.size() << " " << graph.size() << endl;
+    cout << k << " SCCs."<< endl;
 }
 
 
@@ -200,14 +214,13 @@ Graph Graph::transpose() {
 }
 
 void Graph::print() { // print graph
-    int k = 0;
+
     for (auto i : graph) {
         cout << i.id << " --> ";
         for (auto j : i.followers){
             cout << j->id << " --> ";
-            k ++;
+
         }
-        cout << "NULL." << endl;
     }
 
 }
