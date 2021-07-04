@@ -67,16 +67,14 @@ vector<Node> Graph::topInfluencer (int cant){ // Compute the n most influencer u
 }
 
 vector<Node> Graph::topInfluenced(int n) {
-    cout << "Holis\n";
+
     for (Node i : graph){
         for (auto j: i.followers){
             j->following ++;
         }
     }
-    cout << "Bye :(\n";
     vector<Node> result = graph;
     sort(result.begin(), result.end(), [](Node a, Node b)->bool {return a.following > b.following;});
-    cout << ":P\n";
     return vector<Node>(result.begin(), result.begin() + n);
 }
 
@@ -141,6 +139,7 @@ vector<Node> Graph::influenceColorMap() {
 }
 
 void Graph::recursiveDFS(Node n, set<str>* vis) {
+    cout << n.id << " --> ";
     vis->insert(n.id);
     for (auto i : n.followers){
         if (vis->find(i->id) == vis->end()){
@@ -165,8 +164,23 @@ void Graph::Kosaraju() {
     stack<Node> s;
     set<str> vis;
     recursiveDFS(graph[0], &vis, &s);
-    transpose();
+
+    set<str> vr;
+    Graph T = this->transpose();
+    while (!s.empty()){
+        Node top = s.top();
+        s.pop();
+        if (vr.find(top.id) == vr.end()){
+            cout << "SCC: \n";
+            T.recursiveDFS(top, &vr);
+            cout << endl;
+            cout << endl;
+        }
+
+    }
 }
+
+
 
 Graph Graph::transpose() {
     Graph T;
@@ -175,11 +189,14 @@ Graph Graph::transpose() {
         T.graph[i].followers.clear();
         T.graph[i].followers.resize(0);
     }
+    int ind;
     for (int i = 0; i < graph.size(); ++i) {
         for (int j = 0; j < graph[i].followers.size(); ++j) {
-            T.graph[i] =
+            ind = graph[i].followers.at(j)->pos;
+            T.graph[ind].followers.push_front(&graph[i]);
         }
     }
+
 }
 
 void Graph::print() { // print graph
@@ -194,6 +211,7 @@ void Graph::print() { // print graph
     }
 
 }
+int Graph ::size() { return graph.size();}
 
 Graph::~Graph() {
 

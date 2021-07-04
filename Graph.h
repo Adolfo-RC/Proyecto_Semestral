@@ -40,6 +40,7 @@ private:
 
     void recursiveDFS (Node n, set <str> * vis, stack<Node> * s );
     Graph transpose ();
+    void insert (Node, Node);
 
 public:
     Graph(); // Class constructor
@@ -53,6 +54,7 @@ public:
 
     void recursiveDFS (Node, set<str> *);
     void Kosaraju ();
+    int size ();
     ~Graph(); // class destructor
 
 };
