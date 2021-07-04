@@ -23,6 +23,7 @@ struct Node {
     str id; // ID field
     int pos;
     int following;
+    double polPow;
     deque<Node *> followers;
     vector<double> politicalTendency; // vector of political tendency with 4 components (1 for each tendency)
 
