@@ -56,6 +56,7 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
     f.close();
 }
 
+
 vector<Node> Graph::topInfluencer (int cant){ // Compute the n most influencer users. (The users with more followers)
     vector<Node> result = graph; // Result vector
     auto comp = [] (Node a, Node b)->bool { // lambda comparator func
@@ -210,6 +211,7 @@ Graph Graph::transpose() { // Compute the inverse graph
 
 void Graph::print() { // print graph
 
+
     for (auto i : graph) {
         cout << i.id << " --> ";
         for (auto j : i.followers){
@@ -220,6 +222,67 @@ void Graph::print() { // print graph
 
 }
 int Graph ::size() { return graph.size();}
+
+void Graph::exportGraph() {
+    ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Graph1.txt");
+    for (auto i : graph){
+        for (auto j : i.followers){
+            f << i.id;
+            f << " ";
+        }
+    }
+    f << "\n";
+    for (auto i : graph){
+        for (auto j : i.followers){
+            f << j->id;
+            f << " ";
+        }
+    }
+    f.close();
+}
+
+void Graph::computeStats() {
+    int mixt = 0;
+    bool *vis = new bool [graph.size()];
+
+    for (int i = 0; i < graph.size(); ++i) {
+        vis[i] = false;
+    }
+    int left = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
+        if (max == a.politicalTendency[1] and max == a.politicalTendency[0]){
+
+            return true;
+        }
+        return  max == a.politicalTendency[0] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
+        and max != a.politicalTendency[3];
+
+    });
+    int libert = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
+
+        return  max == a.politicalTendency[1] and max != a.politicalTendency[0] and max != a.politicalTendency[2]
+                and max != a.politicalTendency[3];});
+    int right = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
+        if (max == a.politicalTendency[3] and max == a.politicalTendency[4]){
+            return true;
+        }
+        return  max == a.politicalTendency[2] and max != a.politicalTendency[1] and max != a.politicalTendency[0]
+                and max != a.politicalTendency[3];});
+    int center = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
+
+        return  max == a.politicalTendency[3] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
+                and max != a.politicalTendency[0];});
+    cout << "left: " << (double (left)/double (graph.size())) * 100 << "%."  << endl;
+    cout << "libertarian: " << (double (libert)/ double (this->size())) * 100 << "%." << endl;
+    cout << "right: " << (double (right)/ double (this->size())) * 100 << "%." << endl;
+    cout << "center: " << (double (center)/ double (this->size())) * 100 << "%." << endl;
+    mixt = this->size() - (left + right + libert + center);
+    cout << "mixt: " << (double (mixt) / double (this->size()) * 100) << "%\n";
+
+}
 
 Graph::~Graph() {
 

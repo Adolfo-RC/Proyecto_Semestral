@@ -42,6 +42,7 @@
 #include <fstream>
 #include <set>
 #include <stack>
+
 using namespace std;
 //namesppcese to bue used for typename simplification
 using uint = unsigned int;
@@ -67,23 +68,36 @@ private:
     vector<Node> graph; //adjacency list
     void politicalTendencyCalc(str Magazine);
 
-    void recursiveDFS (Node n, set <str> * vis, stack<Node> * s );
-    Graph transpose ();
-    void insert (Node, Node);
+    void recursiveDFS(Node n, set<str> *vis, stack<Node> *s);
+
+    Graph transpose();
+
+    void insert(Node, Node);
 
 public:
     Graph(); // Class constructor
     void insert(str vertex, str junctions); // insert in graph
+    void insert(str node);
+
+    void insertP(str source, str dest);
+
     void print(); // print graph
     vector<Node> topInfluencer(int n);
 
     vector<Node> topInfluenced(int n);
 
-    vector<Node> influenceColorMap ();
+    vector<Node> influenceColorMap();
 
-    void recursiveDFS (Node, set<str> *);
-    void Kosaraju ();
-    int size ();
+    void recursiveDFS(Node, set<str> *);
+
+    void Kosaraju();
+
+    void exportGraph();
+
+    void computeStats();
+
+    int size();
+
     ~Graph(); // class destructor
 
 };
