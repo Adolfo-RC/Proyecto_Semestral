@@ -15,6 +15,7 @@ int main() {
     tweet.influenceColorMap();
     tweet.computeStats();
     cout << tweet.size();
+    tweet.exportTendencies();
     //tweet.print();
 
     return 0;

@@ -94,6 +94,8 @@ public:
 
     void exportGraph();
 
+    void exportTendencies();
+
     void computeStats();
 
     int size();

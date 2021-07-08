@@ -284,6 +284,20 @@ void Graph::computeStats() {
 
 }
 
+void Graph::exportTendencies() {
+    ofstream f ("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Tendencies.txt");
+    for (auto i : graph){
+        f << i.politicalTendency[0];
+        f << " ";
+        f << i.politicalTendency[1];
+        f << " ";
+        f << i.politicalTendency[2];
+        f << " ";
+        f << i.politicalTendency[3];
+        f << " ";
+        f << "\n";
+    }
+}
 Graph::~Graph() {
 
 }
