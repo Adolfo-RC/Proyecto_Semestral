@@ -170,13 +170,10 @@ void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) { // DFS with st
 void Graph::Kosaraju() { // Kosaraju
     stack<Node> s; // stack needed
     set<str> vis; // set for direct DFS
-    recursiveDFS(graph[0], &vis, &s); // direct recursive call
-
-    for (Node i : graph) { // For every node
-        if (vis.find(i.id) == vis.end()) { // that has not been visited
-            recursiveDFS(i, &vis, &s); // run dfs from that node
+    for (int i = 0; i < graph.size(); ++i) {
+        if (vis.find(graph[i].id) == vis.end()){
+            recursiveDFS(graph[i], &vis, &s);
         }
-        if (graph.size() == vis.size()) break; // if all node has been visited -> end;
     }
     Graph T = this->transpose(); // Inverse graph
     vis.clear(); // clear set for inverse run
@@ -192,7 +189,7 @@ void Graph::Kosaraju() { // Kosaraju
         }
 
     }
-
+    cout << k << endl;
 
 }
 

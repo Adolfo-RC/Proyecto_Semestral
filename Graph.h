@@ -100,6 +100,8 @@ public:
 
     int size();
 
+    Node returnNode(int n);
+
     ~Graph(); // class destructor
 
 };

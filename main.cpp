@@ -10,7 +10,7 @@ int main() {
 
 
     //vector<Node> k = tweet.influenceColorMap();
-    auto z = tweet.topInfluenced(tweet.size());
+    //auto z = tweet.topInfluenced(tweet.size());
     //tweet.exportGraph();
     tweet.Kosaraju();
 
