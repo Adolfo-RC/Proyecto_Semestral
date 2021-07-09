@@ -21,7 +21,7 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
     int k, j;
 
     while (getline(f, read)) { // read line from file. O(V) with V number of vertexes
-        if (i == 0){ // Skip the first read (cv header)
+        if (i == 0) { // Skip the first read (cv header)
             i++;
             continue;
         }
@@ -38,8 +38,8 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
     f.close();
     f.open(junctions); // reading the connections
     i = 0;
-    while (getline(f, read)){  // reading the lines
-        if (i == 0){
+    while (getline(f, read)) {  // reading the lines
+        if (i == 0) {
             i++;
             continue;
         }
@@ -49,7 +49,7 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
         umap::iterator it = ref.find(followee); // find the table position by  the id
         umap::iterator it2 = ref.find(follower);
         graph[it->second].followers.push_front(&graph[it2->second]); // insert into the graph O(1) amortized time;
-        i ++;
+        i++;
 
 
     }
@@ -57,26 +57,27 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
 }
 
 
-vector<Node> Graph::topInfluencer (int cant){ // Compute the n most influencer users. (The users with more followers)
+vector<Node> Graph::topInfluencer(int cant) { // Compute the n most influencer users. (The users with more followers)
     vector<Node> result = graph; // Result vector
-    auto comp = [] (Node a, Node b)->bool { // lambda comparator func
+    auto comp = [](Node a, Node b) -> bool { // lambda comparator func
         return a.followers.size() > b.followers.size(); // if number of followers is bigger
     };
     sort(result.begin(), result.end(), comp); // sort graph by followers
-    return vector<Node>(result.begin(), result.begin() + cant ); // return sorted vector
+    return vector<Node>(result.begin(), result.begin() + cant); // return sorted vector
 
 }
 
 
 vector<Node> Graph::topInfluenced(int n) { // Compute the n most influneced users (Useres following more people)
 
-    for (Node i : graph){
-        for (auto j: i.followers){
-            j->following ++; // If user appears in other user list of followers
+    for (Node i : graph) {
+        for (auto j: i.followers) {
+            j->following++; // If user appears in other user list of followers
         }
     }
     vector<Node> result = graph; // result vector
-    sort(result.begin(), result.end(), [](Node a, Node b)->bool {return a.following > b.following;}); // sorted by following field
+    sort(result.begin(), result.end(),
+         [](Node a, Node b) -> bool { return a.following > b.following; }); // sorted by following field
     return vector<Node>(result.begin(), result.begin() + n); // return sorted vector
 }
 
@@ -84,20 +85,21 @@ void Graph::politicalTendencyCalc(str Magazine) { // Computes the political tend
     int node = ref.find(Magazine)->second; // Find node pos by id
 
     queue<Node> Q; // BFS queue
-    set <str> visited; // visited set
+    set<str> visited; // visited set
     Node u = graph[node]; // Start node
     u.polPow = 200.0; // Initial polPow
     Q.push(u); // Insert u into queue
     visited.insert(graph[node].id); // mark u as visited
 
     // Coloring the graph
-    while (!Q.empty()){ // While elements in queue
+    while (!Q.empty()) { // While elements in queue
         u = Q.front(); // u = first inserted element
 
         Q.pop(); // extarct from queue
-        for (auto i : u.followers){ // for all the children
-            if (visited.find(i->id) == visited.end()){ // if the instance has not been visited yet
-                i->politicalTendency[node] = u.polPow/2; // Assign half of the political power of his parent to the current political tendency
+        for (auto i : u.followers) { // for all the children
+            if (visited.find(i->id) == visited.end()) { // if the instance has not been visited yet
+                i->politicalTendency[node] = u.polPow /
+                                             2; // Assign half of the political power of his parent to the current political tendency
                 i->polPow = u.polPow / 2; // And to his own political power
                 Q.push(*i); // inert i to queue
                 visited.insert(i->id); // mark i as visitied
@@ -110,17 +112,17 @@ void Graph::politicalTendencyCalc(str Magazine) { // Computes the political tend
     }
 
 
-
 }
 
 // A dummy sum func
-double sum (vector<double> a){
+double sum(vector<double> a) {
     double res = 0;
-    for (double j : a){
+    for (double j : a) {
         res += j;
     }
     return res;
 }
+
 vector<Node> Graph::influenceColorMap() { // Color all the graph by his political influence
     politicalTendencyCalc("Cooperativa"); // right
     politicalTendencyCalc("soyvaldiviacl"); // libertarian
@@ -128,36 +130,36 @@ vector<Node> Graph::influenceColorMap() { // Color all the graph by his politica
     politicalTendencyCalc("elmostrador"); // center
 
     double s = 0; // sum
-    for (Node i : graph){ // for every node in graph
+    for (Node i : graph) { // for every node in graph
         s = sum(i.politicalTendency); // sum his influences
         cout << " Political tendency " << i.id << ": ";
-        for (double j : i.politicalTendency){ // for every component in his political tendency
+        for (double j : i.politicalTendency) { // for every component in his political tendency
             j = (j / s) * 100; // % of influence
             cout << j << "% ";
         }
-        cout <<endl;
+        cout << endl;
     }
     return graph; // return the graph modified.
 
 }
 
-void Graph::recursiveDFS(Node n, set<str>* vis) { // DFS without stack implementation
-    //cout << n.id << " --> ";
+void Graph::recursiveDFS(Node n, set<str> *vis) { // DFS without stack implementation
+    cout << n.id << " --> ";
 
     vis->insert(n.id); // set node as visited
-    for (auto i : n.followers){ // for every children
-        if (vis->find(i->id) == vis->end()){
+    for (auto i : n.followers) { // for every children
+        if (vis->find(i->id) == vis->end()) {
             recursiveDFS(*i, vis); // recursive call
         }
     }
 }
 
 
-
 void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) { // DFS with stack for Kosaraju
     vis->insert(n.id);
-    for (auto i : n.followers){
-        if (vis->find(i->id) == vis->end()){
+    //cout << n.id << " - ";
+    for (auto i : n.followers) {
+        if (vis->find(i->id) == vis->end()) {
             recursiveDFS(*i, vis, s); // same of recursiveDEFS
         }
     }
@@ -168,10 +170,10 @@ void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) { // DFS with st
 void Graph::Kosaraju() { // Kosaraju
     stack<Node> s; // stack needed
     set<str> vis; // set for direct DFS
-    recursiveDFS(graph[0], &vis, &s ); // direct recursive call
+    recursiveDFS(graph[0], &vis, &s); // direct recursive call
 
-    for (Node i : graph){ // For every node
-        if (vis.find(i.id) == vis.end()){ // that has not been visited
+    for (Node i : graph) { // For every node
+        if (vis.find(i.id) == vis.end()) { // that has not been visited
             recursiveDFS(i, &vis, &s); // run dfs from that node
         }
         if (graph.size() == vis.size()) break; // if all node has been visited -> end;
@@ -179,32 +181,39 @@ void Graph::Kosaraju() { // Kosaraju
     Graph T = this->transpose(); // Inverse graph
     vis.clear(); // clear set for inverse run
     int k = 0; // SCC counter
-    while (!s.empty()){ // While elements in stack
+    while (!s.empty()) { // While elements in stack
         Node top = s.top(); // first node in stack
         s.pop(); // un - pile node
-        if (vis.find(top.id) == vis.end()){ // if has benn not visited
+        if (vis.find(top.id) == vis.end()) { // if has benn not visited
+            cout << "SCC: \n";
             T.recursiveDFS(top, &vis); // DFS from node
-
+            cout << endl;
             k++; // increase SCC counter
         }
 
     }
-    cout << vis.size() << " " << graph.size() << endl;
-    cout << k << " SCCs."<< endl;
+
+
 }
 
 
-
 Graph Graph::transpose() { // Compute the inverse graph
-    Graph T = *this; //New graph = current graph
-    for (auto i : T.graph){ //for every node in new graph
-        i.followers.clear(); // clear hsi followers. A 0 node in list status is implicit.
+    Graph T;
+    for (int i = 0; i < graph.size(); ++i) {
+        T.graph.push_back(graph[i]);
+        T.graph[i].following = 0;
+        T.graph[i].followers.clear();
     }
-    for (auto i : graph){ // for every node in graph
-        for (auto j : i.followers){ // for every follower of current node
-            T.graph[j->pos].followers.push_front(&i); // Change follower for followee
+
+
+
+    for (Node i : graph) {
+        for (Node *j : i.followers) {
+            T.graph[j->pos].followers.push_front(&T.graph[i.pos]);
         }
     }
+
+    T.topInfluenced(T.size() - 1);
     return T; //  return graph
 
 }
@@ -214,26 +223,27 @@ void Graph::print() { // print graph
 
     for (auto i : graph) {
         cout << i.id << " --> ";
-        for (auto j : i.followers){
+        for (auto j : i.followers) {
             cout << j->id << " --> ";
 
         }
     }
 
 }
-int Graph ::size() { return graph.size();}
+
+int Graph::size() { return graph.size(); }
 
 void Graph::exportGraph() {
     ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Graph1.txt");
-    for (auto i : graph){
-        for (auto j : i.followers){
+    for (auto i : graph) {
+        for (auto j : i.followers) {
             f << i.id;
             f << " ";
         }
     }
     f << "\n";
-    for (auto i : graph){
-        for (auto j : i.followers){
+    for (auto i : graph) {
+        for (auto j : i.followers) {
             f << j->id;
             f << " ";
         }
@@ -243,50 +253,53 @@ void Graph::exportGraph() {
 
 void Graph::computeStats() {
     int mixt = 0;
-    bool *vis = new bool [graph.size()];
+    bool *vis = new bool[graph.size()];
 
     for (int i = 0; i < graph.size(); ++i) {
         vis[i] = false;
     }
-    int left = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+    int left = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
-        if (max == a.politicalTendency[1] and max == a.politicalTendency[0]){
+        if (max == a.politicalTendency[1] and max == a.politicalTendency[0]) {
 
             return true;
         }
-        return  max == a.politicalTendency[0] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
-        and max != a.politicalTendency[3];
+        return max == a.politicalTendency[0] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
+               and max != a.politicalTendency[3];
 
     });
-    int libert = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+    int libert = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
 
-        return  max == a.politicalTendency[1] and max != a.politicalTendency[0] and max != a.politicalTendency[2]
-                and max != a.politicalTendency[3];});
-    int right = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+        return max == a.politicalTendency[1] and max != a.politicalTendency[0] and max != a.politicalTendency[2]
+               and max != a.politicalTendency[3];
+    });
+    int right = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
-        if (max == a.politicalTendency[3] and max == a.politicalTendency[4]){
+        if (max == a.politicalTendency[3] and max == a.politicalTendency[4]) {
             return true;
         }
-        return  max == a.politicalTendency[2] and max != a.politicalTendency[1] and max != a.politicalTendency[0]
-                and max != a.politicalTendency[3];});
-    int center = count_if(graph.begin(), graph.end(), [&mixt](Node a)->bool {
+        return max == a.politicalTendency[2] and max != a.politicalTendency[1] and max != a.politicalTendency[0]
+               and max != a.politicalTendency[3];
+    });
+    int center = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
 
-        return  max == a.politicalTendency[3] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
-                and max != a.politicalTendency[0];});
-    cout << "left: " << (double (left)/double (graph.size())) * 100 << "%."  << endl;
-    cout << "libertarian: " << (double (libert)/ double (this->size())) * 100 << "%." << endl;
-    cout << "right: " << (double (right)/ double (this->size())) * 100 << "%." << endl;
-    cout << "center: " << (double (center)/ double (this->size())) * 100 << "%." << endl;
+        return max == a.politicalTendency[3] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
+               and max != a.politicalTendency[0];
+    });
+    cout << "left: " << (double(left) / double(graph.size())) * 100 << "%." << endl;
+    cout << "libertarian: " << (double(libert) / double(this->size())) * 100 << "%." << endl;
+    cout << "right: " << (double(right) / double(this->size())) * 100 << "%." << endl;
+    cout << "center: " << (double(center) / double(this->size())) * 100 << "%." << endl;
     mixt = this->size() - (left + right + libert + center);
-    cout << "mixt: " << (double (mixt) / double (this->size()) * 100) << "%\n";
+    cout << "mixt: " << (double(mixt) / double(this->size()) * 100) << "%\n";
 
 }
 
 void Graph::exportTendencies() {
-    ofstream f ("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Tendencies.txt");
-    for (auto i : graph){
+    ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Tendencies.txt");
+    for (auto i : graph) {
         f << i.politicalTendency[0];
         f << " ";
         f << i.politicalTendency[1];
@@ -298,6 +311,7 @@ void Graph::exportTendencies() {
         f << "\n";
     }
 }
+
 Graph::~Graph() {
 
 }
