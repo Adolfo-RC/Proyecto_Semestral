@@ -16,7 +16,6 @@ void Graph::insert(str vertex, str junctions) { // insert function takes as para
     ifstream f; // file buffer
     str read; // str for reading
     f.open(vertex);
-
     int i = 0;
     int k, j;
 
@@ -143,53 +142,57 @@ vector<Node> Graph::influenceColorMap() { // Color all the graph by his politica
 
 }
 
-void Graph::recursiveDFS(Node n, set<str> *vis) { // DFS without stack implementation
-    cout << n.id << " --> ";
-
-    vis->insert(n.id); // set node as visited
-    for (auto i : n.followers) { // for every children
-        if (vis->find(i->id) == vis->end()) {
-            recursiveDFS(*i, vis); // recursive call
+void Graph::DFSUtil(int pos, bool *visited) {
+    visited[pos] = true;
+    Node n = graph[pos];
+    //cout << n.id << " --->";
+    for (int i = 0; i < n.followers.size(); ++i) {
+        if (!visited[n.followers[i]->pos]){
+            DFSUtil(n.followers[i]->pos, visited);
         }
     }
 }
 
-
-void Graph::recursiveDFS(Node n, set<str> *vis, stack<Node> *s) { // DFS with stack for Kosaraju
-    vis->insert(n.id);
-    //cout << n.id << " - ";
-    for (auto i : n.followers) {
-        if (vis->find(i->id) == vis->end()) {
-            recursiveDFS(*i, vis, s); // same of recursiveDEFS
+void Graph::fillOrder(int pos, bool *visited, stack<Node> &s) {
+    visited[pos] = true;
+    Node n = graph[pos];
+    for (int i = 0; i < n.followers.size(); ++i) {
+        if (!visited[n.followers[i]->pos]){
+            fillOrder(n.followers[i]->pos, visited, s);
         }
     }
-    s->push(n); // When node is done insert node to stack
-
+    s.push(n);
 }
-
-void Graph::Kosaraju() { // Kosaraju
+int Graph::Kosaraju() { // Kosaraju
     stack<Node> s; // stack needed
-    set<str> vis; // set for direct DFS
+    bool *visited = new bool [graph.size()];
     for (int i = 0; i < graph.size(); ++i) {
-        if (vis.find(graph[i].id) == vis.end()){
-            recursiveDFS(graph[i], &vis, &s);
-        }
+        visited[i] = false;
     }
-    Graph T = this->transpose(); // Inverse graph
-    vis.clear(); // clear set for inverse run
-    int k = 0; // SCC counter
-    while (!s.empty()) { // While elements in stack
-        Node top = s.top(); // first node in stack
-        s.pop(); // un - pile node
-        if (vis.find(top.id) == vis.end()) { // if has benn not visited
-            cout << "SCC: \n";
-            T.recursiveDFS(top, &vis); // DFS from node
-            cout << endl;
-            k++; // increase SCC counter
-        }
 
+    for (int i = 0; i < graph.size(); ++i) {
+        if (visited[i] == false)
+            fillOrder(graph[i].pos, visited, s);
     }
-    cout << k << endl;
+
+    Graph T = this->transpose();
+
+    for (int i = 0; i < graph.size(); ++i) {
+        visited[i] = false;
+    }
+    int k = 0;
+    while (!s.empty()){
+        Node v = s.top();
+
+        s.pop();
+        if (visited[v.pos] == false){
+            cout << v.id << " " << v.followers.size();
+            T.DFSUtil(v.pos, visited);
+            cout << endl;
+            k ++;
+        }
+    }
+    return k;
 
 }
 
@@ -210,7 +213,9 @@ Graph Graph::transpose() { // Compute the inverse graph
         }
     }
 
-    T.topInfluenced(T.size() - 1);
+
+
+
     return T; //  return graph
 
 }
@@ -231,18 +236,20 @@ void Graph::print() { // print graph
 int Graph::size() { return graph.size(); }
 
 void Graph::exportGraph() {
-    ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Graph1.txt");
+    ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Origins.txt");
     for (auto i : graph) {
         for (auto j : i.followers) {
-            f << i.id;
-            f << " ";
+            f << i.pos;
+            f << "\n";
         }
     }
+    f.close();
+    f.open("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Destiny.txt");
     f << "\n";
     for (auto i : graph) {
         for (auto j : i.followers) {
-            f << j->id;
-            f << " ";
+            f << j->pos;
+            f << "\n";
         }
     }
     f.close();

@@ -68,7 +68,9 @@ private:
     vector<Node> graph; //adjacency list
     void politicalTendencyCalc(str Magazine);
 
-    void recursiveDFS(Node n, set<str> *vis, stack<Node> *s);
+    void DFSUtil (int n, bool visited []);
+
+    void fillOrder(int n, bool visited [], stack<Node> &s);
 
     Graph transpose();
 
@@ -88,9 +90,7 @@ public:
 
     vector<Node> influenceColorMap();
 
-    void recursiveDFS(Node, set<str> *);
-
-    void Kosaraju();
+    int Kosaraju();
 
     void exportGraph();
 
