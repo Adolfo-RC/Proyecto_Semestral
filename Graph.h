@@ -81,28 +81,28 @@ public:
     void insert(str vertex, str junctions); // insert in graph
     void insert(str node);
 
-    void insertP(str source, str dest);
+
 
     void print(); // print graph
-    vector<Node> topInfluencer(int n);
+    vector<Node> topInfluencer(int n); // returns a ranking with the most followed users
 
-    vector<Node> topInfluenced(int n);
+    vector<Node> topInfluenced(int n); // returns a ranking with the most followers users
 
-    vector<Node> influenceColorMap();
+    vector<Node> influenceColorMap(); // returns an array with % of political influence for every user
 
-    int Kosaraju();
+    int Kosaraju(); // Kosaraju's SCC detection algorithm. Returns count
 
-    void exportGraph(str path);
+    void exportGraph(str path); // Export graph as a txt
 
-    void exportTendencies(str path);
+    void exportTendencies(str path); // Export tendencies as txt
 
-    void computeStats();
+    void computeStats(); // compute the political dispersion in Chile
 
-    int size();
+    int size(); // returns the number of vertex in graph
 
-    Node returnNode(int n);
+    Node returnNode(int n); // returns a partiular node
 
-    void getGraphSize();
+    void getGraphSize(); // Computes the graph size in MB
 
     ~Graph(); // class destructor
 

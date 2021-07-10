@@ -142,53 +142,53 @@ vector<Node> Graph::influenceColorMap() { // Color all the graph by his politica
 
 }
 
-void Graph::DFSUtil(int pos, bool *visited) {
-    visited[pos] = true;
-    Node n = graph[pos];
-    //cout << n.id << " --->";
-    for (int i = 0; i < n.followers.size(); ++i) {
-        if (!visited[n.followers[i]->pos]) {
-            DFSUtil(n.followers[i]->pos, visited);
+void Graph::DFSUtil(int pos, bool *visited) { // DFS computation for Kosaraju's SCC detection
+    visited[pos] = true; // set current node as visited
+    Node n = graph[pos];// create a node from pos
+    cout << n.id << " --->";
+    for (int i = 0; i < n.followers.size(); ++i) { // For every user in current vertex followers
+        if (!visited[n.followers[i]->pos]) { // if not vsited
+            DFSUtil(n.followers[i]->pos, visited);// recursive call with the current follower
         }
     }
 }
 
-void Graph::fillOrder(int pos, bool *visited, stack<Node> &s) {
-    visited[pos] = true;
-    Node n = graph[pos];
-    for (int i = 0; i < n.followers.size(); ++i) {
-        if (!visited[n.followers[i]->pos]) {
-            fillOrder(n.followers[i]->pos, visited, s);
+void Graph::fillOrder(int pos, bool *visited, stack<Node> &s) { // Stack filling for Kosaraju's SCC detection
+    visited[pos] = true;                                          //  *****    *******     *******
+    Node n = graph[pos];                                         //   *    *   *           *
+    for (int i = 0; i < n.followers.size(); ++i) {              //    *     *  *****       *
+        if (!visited[n.followers[i]->pos]) {                   //     *    *   *           *
+            fillOrder(n.followers[i]->pos, visited, s);    //      *****    *      ******
         }
     }
-    s.push(n);
+    s.push(n); // When DFS ends, push into stack
 }
 
-int Graph::Kosaraju() { // Kosaraju
+int Graph::Kosaraju() { // Kosaraju's SCC Detection
     stack<Node> s; // stack needed
-    bool *visited = new bool[graph.size()];
+    bool *visited = new bool[graph.size()]; // visited bool array
     for (int i = 0; i < graph.size(); ++i) {
-        visited[i] = false;
+        visited[i] = false; // all to false
     }
 
     for (int i = 0; i < graph.size(); ++i) {
         if (visited[i] == false)
-            fillOrder(graph[i].pos, visited, s);
+            fillOrder(graph[i].pos, visited, s); // fill the stack
     }
 
-    Graph T = this->transpose();
+    Graph T = this->transpose(); // get reverse
 
     for (int i = 0; i < graph.size(); ++i) {
-        visited[i] = false;
+        visited[i] = false; // set to false for inverse dfs
     }
     int k = 0;
-    while (!s.empty()) {
-        Node v = s.top();
+    while (!s.empty()) { // While elemnts in stack
+        Node v = s.top(); // get top
 
-        s.pop();
+        s.pop(); // Pop
         if (visited[v.pos] == false) {
-            cout << v.id << " " << v.followers.size();
-            T.DFSUtil(v.pos, visited);
+            cout << "SCC: ";
+            T.DFSUtil(v.pos, visited); // Inverse DFS
             cout << endl;
             k++;
         }
@@ -201,15 +201,15 @@ int Graph::Kosaraju() { // Kosaraju
 Graph Graph::transpose() { // Compute the inverse graph
     Graph T;
     for (int i = 0; i < graph.size(); ++i) {
-        T.graph.push_back(graph[i]);
-        T.graph[i].following = 0;
-        T.graph[i].followers.clear();
+        T.graph.push_back(graph[i]); // Copy graph
+        T.graph[i].following = 0; // without following
+        T.graph[i].followers.clear(); // without followers
     }
 
 
     for (Node i : graph) {
         for (Node *j : i.followers) {
-            T.graph[j->pos].followers.push_front(&T.graph[i.pos]);
+            T.graph[j->pos].followers.push_front(&T.graph[i.pos]); // Become followers in followees
         }
     }
 
@@ -231,9 +231,9 @@ void Graph::print() { // print graph
 
 }
 
-int Graph::size() { return graph.size(); }
+int Graph::size() { return graph.size(); } // returns the number of vertexes in graph
 
-void Graph::exportGraph(str path) {
+void Graph::exportGraph(str path) { // exports graph as txt (For Python isualization)
     ofstream f(path + "/Origins.txt");
     for (auto i : graph) {
         for (auto j : i.followers) {
@@ -253,30 +253,33 @@ void Graph::exportGraph(str path) {
     f.close();
 }
 
-void Graph::computeStats() {
-    int mixt = 0;
-    bool *vis = new bool[graph.size()];
+void Graph::computeStats() { // Compute stats
+    int mix = 0; // mix count
+    bool *vis = new bool[graph.size()]; // visited
 
     for (int i = 0; i < graph.size(); ++i) {
-        vis[i] = false;
+        vis[i] = false; // to false
     }
-    int left = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
-        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
-        if (max == a.politicalTendency[1] and max == a.politicalTendency[0]) {
+    // NOTE: If a user has the same levels of influence from left and libertarian will be counted as left
+    // The same applies for right and center
+    // If has the same level for opposite tendencies will be counted as mix.
+    int left = count_if(graph.begin(), graph.end(), [](Node a) -> bool { // using for count if
+        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end()); // extracting the stronger tendency
+        if (max == a.politicalTendency[1] and max == a.politicalTendency[0]) { // If left and libertarian are equal
 
-            return true;
+            return true; // count as left
         }
         return max == a.politicalTendency[0] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
-               and max != a.politicalTendency[3];
+               and max != a.politicalTendency[3]; // return true if left is higher
 
     });
-    int libert = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
+    int libert = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
 
         return max == a.politicalTendency[1] and max != a.politicalTendency[0] and max != a.politicalTendency[2]
                and max != a.politicalTendency[3];
     });
-    int right = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
+    int right = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
         if (max == a.politicalTendency[3] and max == a.politicalTendency[4]) {
             return true;
@@ -284,18 +287,19 @@ void Graph::computeStats() {
         return max == a.politicalTendency[2] and max != a.politicalTendency[1] and max != a.politicalTendency[0]
                and max != a.politicalTendency[3];
     });
-    int center = count_if(graph.begin(), graph.end(), [&mixt](Node a) -> bool {
+    int center = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
 
         return max == a.politicalTendency[3] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
                and max != a.politicalTendency[0];
     });
+    // Print percentages
     cout << "left: " << (double(left) / double(graph.size())) * 100 << "%." << endl;
     cout << "libertarian: " << (double(libert) / double(this->size())) * 100 << "%." << endl;
     cout << "right: " << (double(right) / double(this->size())) * 100 << "%." << endl;
     cout << "center: " << (double(center) / double(this->size())) * 100 << "%." << endl;
-    mixt = this->size() - (left + right + libert + center);
-    cout << "mixt: " << (double(mixt) / double(this->size()) * 100) << "%\n";
+    mix = this->size() - (left + right + libert + center);
+    cout << "mix: " << (double(mix) / double(this->size()) * 100) << "%\n";
 
 }
 
@@ -314,15 +318,15 @@ void Graph::exportTendencies(str path) {
     }
 }
 
-void Graph::getGraphSize() {
-    int content = sizeof(Graph);
-    int graphS = sizeof(Node) * graph.size();
-    int insider = 0;
+void Graph::getGraphSize() { // Cmputes the graf sizes in MB
+    int content = sizeof(Graph); // Graph container size (Includes all memebers in raph class)
+    int graphS = sizeof(Node) * graph.size(); // Espace consumed for the vertexes in graph.
+    int insider = 0; // Espace consumed for the edges in graph
     for (int i = 0; i < graph.size(); ++i) {
-        insider += sizeof(Node *) * graph[i].followers.size();
+        insider += sizeof(Node *) * graph[i].followers.size(); // cont the followers of every node
     }
 
-    cout << "Struct size: " <<  float (content + graphS + insider) / 1000000 << " MBs.\n";
+    cout << "Struct size: " <<  float (content + graphS + insider) / 1000000 << " MBs.\n"; // return MBs
 }
 
 Graph::~Graph() {
