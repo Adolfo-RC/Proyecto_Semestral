@@ -147,7 +147,7 @@ void Graph::DFSUtil(int pos, bool *visited) {
     Node n = graph[pos];
     //cout << n.id << " --->";
     for (int i = 0; i < n.followers.size(); ++i) {
-        if (!visited[n.followers[i]->pos]){
+        if (!visited[n.followers[i]->pos]) {
             DFSUtil(n.followers[i]->pos, visited);
         }
     }
@@ -157,15 +157,16 @@ void Graph::fillOrder(int pos, bool *visited, stack<Node> &s) {
     visited[pos] = true;
     Node n = graph[pos];
     for (int i = 0; i < n.followers.size(); ++i) {
-        if (!visited[n.followers[i]->pos]){
+        if (!visited[n.followers[i]->pos]) {
             fillOrder(n.followers[i]->pos, visited, s);
         }
     }
     s.push(n);
 }
+
 int Graph::Kosaraju() { // Kosaraju
     stack<Node> s; // stack needed
-    bool *visited = new bool [graph.size()];
+    bool *visited = new bool[graph.size()];
     for (int i = 0; i < graph.size(); ++i) {
         visited[i] = false;
     }
@@ -181,15 +182,15 @@ int Graph::Kosaraju() { // Kosaraju
         visited[i] = false;
     }
     int k = 0;
-    while (!s.empty()){
+    while (!s.empty()) {
         Node v = s.top();
 
         s.pop();
-        if (visited[v.pos] == false){
+        if (visited[v.pos] == false) {
             cout << v.id << " " << v.followers.size();
             T.DFSUtil(v.pos, visited);
             cout << endl;
-            k ++;
+            k++;
         }
     }
     return k;
@@ -206,14 +207,11 @@ Graph Graph::transpose() { // Compute the inverse graph
     }
 
 
-
     for (Node i : graph) {
         for (Node *j : i.followers) {
             T.graph[j->pos].followers.push_front(&T.graph[i.pos]);
         }
     }
-
-
 
 
     return T; //  return graph
@@ -314,6 +312,17 @@ void Graph::exportTendencies() {
         f << " ";
         f << "\n";
     }
+}
+
+void Graph::getGraphSize() {
+    int content = sizeof(Graph);
+    int graphS = sizeof(Node) * graph.size();
+    int insider = 0;
+    for (int i = 0; i < graph.size(); ++i) {
+        insider += sizeof(Node *) * graph[i].followers.size();
+    }
+
+    cout << "Struct size: " <<  float (content + graphS + insider) / 1000000 << " MBs.\n";
 }
 
 Graph::~Graph() {

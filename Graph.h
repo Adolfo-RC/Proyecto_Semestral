@@ -102,6 +102,8 @@ public:
 
     Node returnNode(int n);
 
+    void getGraphSize();
+
     ~Graph(); // class destructor
 
 };

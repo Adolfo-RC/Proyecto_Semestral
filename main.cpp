@@ -1,6 +1,17 @@
 #include <iostream>
 #include "Graph.h"
+#include <stdio.h>
 #include <filesystem>
+
+#ifdef WINDOWS // Idea taked from stackOverflow to get currentpath
+    #include <direct.h>
+    #define GetCurrentDir _getcwd
+#else
+    #include <unistd.h>
+    #define GetCurrentDir getcwd
+
+#endif
+
 
 
 
@@ -9,13 +20,17 @@ using namespace std;
 
 
 int main() {
+
+    char currentPath [FILENAME_MAX];
+    GetCurrentDir(currentPath, sizeof (currentPath));
+    str strCurrentPath = currentPath;
+
+
     Graph tweet;
-    tweet.insert("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/twitter_users.csv",
-                 "/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/twitter_connections.csv");
+    tweet.insert(strCurrentPath + "/twitter_users.csv",
+                 strCurrentPath + "/twitter_connections.csv");
 
-    ifstream f;
 
-    if (!f.is_open()) cout<<"LLLLL";
 
     //vector<Node> k = tweet.influenceColorMap();
     //auto z = tweet.topInfluenced(tweet.size());
@@ -23,6 +38,9 @@ int main() {
     //int x = tweet.Kosaraju();
     //cout << endl << endl << x << endl;
     //tweet.print();
+
+    tweet.getGraphSize();
+
 
     return 0;
 }
