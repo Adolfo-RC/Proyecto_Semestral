@@ -92,9 +92,9 @@ public:
 
     int Kosaraju();
 
-    void exportGraph();
+    void exportGraph(str path);
 
-    void exportTendencies();
+    void exportTendencies(str path);
 
     void computeStats();
 

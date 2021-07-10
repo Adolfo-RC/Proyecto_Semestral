@@ -233,8 +233,8 @@ void Graph::print() { // print graph
 
 int Graph::size() { return graph.size(); }
 
-void Graph::exportGraph() {
-    ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Origins.txt");
+void Graph::exportGraph(str path) {
+    ofstream f(path + "/Origins.txt");
     for (auto i : graph) {
         for (auto j : i.followers) {
             f << i.pos;
@@ -242,7 +242,7 @@ void Graph::exportGraph() {
         }
     }
     f.close();
-    f.open("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Destiny.txt");
+    f.open(path + "/Destiny.txt");
     f << "\n";
     for (auto i : graph) {
         for (auto j : i.followers) {
@@ -299,8 +299,8 @@ void Graph::computeStats() {
 
 }
 
-void Graph::exportTendencies() {
-    ofstream f("/home/eric/Maestria/I Semestre/FED&A/Tareas/Tarea 3/Proyecto final/Tendencies.txt");
+void Graph::exportTendencies(str path) {
+    ofstream f(path + "/Tendencies.txt");
     for (auto i : graph) {
         f << i.politicalTendency[0];
         f << " ";
