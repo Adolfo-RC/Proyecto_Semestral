@@ -87,9 +87,13 @@ void Graph::politicalTendencyCalc(str Magazine) { // Computes the political tend
     set<str> visited; // visited set
     Node u = graph[node]; // Start node
     u.polPow = 200.0; // Initial polPow
+    graph[node].politicalTendency[node] = 200.0;
     Q.push(u); // Insert u into queue
-    visited.insert(graph[node].id); // mark u as visited
-
+    //visited.insert(graph[node].id); // mark u as visited
+    visited.insert(graph[0].id);
+    visited.insert(graph[1].id);
+    visited.insert(graph[2].id);
+    visited.insert(graph[3].id);
     // Coloring the graph
     while (!Q.empty()) { // While elements in queue
         u = Q.front(); // u = first inserted element
@@ -123,10 +127,10 @@ double sum(vector<double> a) {
 }
 
 vector<Node> Graph::influenceColorMap() { // Color all the graph by his political influence
-    politicalTendencyCalc("Cooperativa"); // right
-    politicalTendencyCalc("soyvaldiviacl"); // libertarian
-    politicalTendencyCalc("latercera"); // right
-    politicalTendencyCalc("elmostrador"); // center
+    politicalTendencyCalc("Cooperativa"); // left
+    politicalTendencyCalc("soyvaldiviacl"); // right
+    politicalTendencyCalc("latercera"); // center
+    politicalTendencyCalc("elmostrador"); // libertarian
 
     double s = 0; // sum
     for (Node i : graph) { // for every node in graph
@@ -255,44 +259,34 @@ void Graph::exportGraph(str path) { // exports graph as txt (For Python isualiza
 
 void Graph::computeStats() { // Compute stats
     int mix = 0; // mix count
-    bool *vis = new bool[graph.size()]; // visited
-
-    for (int i = 0; i < graph.size(); ++i) {
-        vis[i] = false; // to false
-    }
     // NOTE: If a user has the same levels of influence from left and libertarian will be counted as left
     // The same applies for right and center
     // If has the same level for opposite tendencies will be counted as mix.
     int left = count_if(graph.begin(), graph.end(), [](Node a) -> bool { // using for count if
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end()); // extracting the stronger tendency
-        if (max == a.politicalTendency[1] and max == a.politicalTendency[0]) { // If left and libertarian are equal
 
-            return true; // count as left
-        }
-        return max == a.politicalTendency[0] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
-               and max != a.politicalTendency[3]; // return true if left is higher
-
+        return max == a.politicalTendency[0] && max != a.politicalTendency[1] && max != a.politicalTendency[2]
+             && max != a.politicalTendency[3]; // return true if left is higher
     });
+
     int libert = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
-
-        return max == a.politicalTendency[1] and max != a.politicalTendency[0] and max != a.politicalTendency[2]
-               and max != a.politicalTendency[3];
+        return max == a.politicalTendency[3] && max != a.politicalTendency[0] && max != a.politicalTendency[2]
+                && max != a.politicalTendency[1];
     });
+
     int right = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
-        if (max == a.politicalTendency[3] and max == a.politicalTendency[4]) {
-            return true;
-        }
-        return max == a.politicalTendency[2] and max != a.politicalTendency[1] and max != a.politicalTendency[0]
-               and max != a.politicalTendency[3];
+        return max == a.politicalTendency[1] && max != a.politicalTendency[2] && max != a.politicalTendency[0]
+               && max != a.politicalTendency[3];
     });
+
     int center = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
-
-        return max == a.politicalTendency[3] and max != a.politicalTendency[1] and max != a.politicalTendency[2]
-               and max != a.politicalTendency[0];
+        return max == a.politicalTendency[2] && max != a.politicalTendency[1] && max != a.politicalTendency[3]
+               && max != a.politicalTendency[0];
     });
+    
     // Print percentages
     cout << "left: " << (double(left) / double(graph.size())) * 100 << "%." << endl;
     cout << "libertarian: " << (double(libert) / double(this->size())) * 100 << "%." << endl;
@@ -328,6 +322,28 @@ void Graph::getGraphSize() { // Cmputes the graf sizes in MB
 
     cout << "Struct size: " <<  float (content + graphS + insider) / 1000000 << " MBs.\n"; // return MBs
 }
+
+Node Graph::returnNode(int n) {
+    return graph[n];
+}
+
+Node Graph::returnNode(str id) {
+    return graph[ref.find(id)->second];
+}
+
+int Graph::findIsland() {
+    this->topInfluenced(0);
+    uint k;
+    for (Node i : this->graph){
+        if (i.following == 0){
+            k++;
+        }
+    }
+
+    return k;
+}
+
+
 
 Graph::~Graph() {
 
