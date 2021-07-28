@@ -1,6 +1,4 @@
-//
-// Created by eric on 6/29/21.
-//
+// Métodos del grafo
 
 #include "Graph.h"
 #include <queue>
@@ -8,26 +6,29 @@
 #include <algorithm>
 #include <set>
 
-Graph::Graph() { // Empty constructor
+Graph::Graph() {} // Constructor.
 
-}
+void Graph::insert(str vertex, str junctions) {
+// Inserta los datos de los datasets entregados en los nodos correspondientes y en el grafo.
 
-void Graph::insert(str vertex, str junctions) { // insert function takes as parameter absolute path to csv files
-    ifstream f; // file buffer
-    str read; // str for reading
-    f.open(vertex);
-    int i = 0;
-    int k, j;
+    ifstream f; // Variable encargada del archivo.
+    str read; // Variable de lectura en el archivo.
+    f.open(vertex); // Abre el nombre del dataset.
+    int i = 0; // Contador.
+    int k, j; // Separadores.
 
-    while (getline(f, read)) { // read line from file. O(V) with V number of vertexes
-        if (i == 0) { // Skip the first read (cv header)
+    while (getline(f, read)) { 
+    // Mientras el archivo siga teniendo lineas con texto.
+        if (i == 0) { 
+        // Se salta la primera linea, puesto que es la cabecera.
             i++;
             continue;
         }
-        k = read.find(";"); // find usr name (ID field) begin
-        j = read.find(";", read.find(";") + 1); // find usr name end
-        str result(read.begin() + k + 1, read.begin() + j); // extract the usr name
-        this->ref.insert(pair<str, int>(result, i - 1)); // insert into the hash table
+        k = read.find(";"); // Encuentra el primer ";".
+        j = read.find(";", read.find(";") + 1); // Busca el siguiente ";".
+        str result(read.begin() + k + 1, read.begin() + j); // Se extrae el nombre de 
+                                                            // usuario entre ambos ";".
+        this->ref.insert(pair<str, int>(result, i - 1)); // 
         this->graph.push_back({result, i - 1, 0, 0});
         graph[i - 1].politicalTendency.resize(4);
         graph[i - 1].politicalTendency = {0, 0, 0, 0};
