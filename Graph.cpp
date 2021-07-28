@@ -13,7 +13,7 @@ void Graph::insert(str vertex, str junctions) {
 
     ifstream f; // Variable encargada del archivo.
     str read; // Variable de lectura en el archivo.
-    f.open(vertex); // Abre el nombre del dataset.
+    f.open(vertex); // Lee el dataset de nombres.
     int i = 0; // Contador.
     int k, j; // Separadores.
 
@@ -28,98 +28,101 @@ void Graph::insert(str vertex, str junctions) {
         j = read.find(";", read.find(";") + 1); // Busca el siguiente ";".
         str result(read.begin() + k + 1, read.begin() + j); // Se extrae el nombre de 
                                                             // usuario entre ambos ";".
-        this->ref.insert(pair<str, int>(result, i - 1)); // 
-        this->graph.push_back({result, i - 1, 0, 0});
-        graph[i - 1].politicalTendency.resize(4);
-        graph[i - 1].politicalTendency = {0, 0, 0, 0};
-        i++;
-
+        this->ref.insert(pair<str, int>(result, i - 1)); // Inserta el nombre y posición
+                                                         // en tabla hash.
+        this->graph.push_back({result, i - 1, 0, 0});   // Inserta el nodo en el grafo.
+        graph[i - 1].politicalTendency.resize(4);    // En el nodo agranda el vector de 
+                                                    // tendencia para las 4 posturas.
+        graph[i - 1].politicalTendency = {0, 0, 0, 0}; // Se inician vacias.
+        i++; // Pasa al siguiente usuario.
     }
-    f.close();
-    f.open(junctions); // reading the connections
-    i = 0;
-    while (getline(f, read)) {  // reading the lines
+
+    f.close(); // Cierra el documento.
+    f.open(junctions); // Lee el dataset de conexiones.
+    i = 0; // Reinicia el contador.
+
+    while (getline(f, read)) { 
+    // Mientras el archivo tenga lineas con texto.
         if (i == 0) {
+        // Se omite el encabezado del dataset.
             i++;
             continue;
         }
-        k = read.find(";"); // find the comma separator
-        str followee(read.begin(), read.begin() + k); // extracting followee
-        str follower(read.begin() + k + 1, read.end()); // extracting follower
-        umap::iterator it = ref.find(followee); // find the table position by  the id
-        umap::iterator it2 = ref.find(follower);
-        graph[it->second].followers.push_front(&graph[it2->second]); // insert into the graph O(1) amortized time;
-        i++;
-
-
+        k = read.find(";"); // Busca el primer separador ";".
+        str followee(read.begin(), read.begin() + k); // Primer dato es considerado seguido.
+        str follower(read.begin() + k + 1, read.end()); // Segundo dato es considerado seguidor.
+        umap::iterator it = ref.find(followee); // Busca en la tabla la posición del seguido.
+        umap::iterator it2 = ref.find(follower); // Busca también la posición del seguidor
+        graph[it->second].followers.push_front(&graph[it2->second]); 
+        // Inserta este en la lista de seguidores del nodo correspondiente.
+        i++; // Avanza a la siguiente linea.
     }
-    f.close();
+
+    f.close(); // Cierra el documento.
 }
 
+vector<Node> Graph::topInfluencer(int cant) { 
+// Entrega los n usuarios con más seguidores (Influenciadores).
 
-vector<Node> Graph::topInfluencer(int cant) { // Compute the n most influencer users. (The users with more followers)
-    vector<Node> result = graph; // Result vector
-    auto comp = [](Node a, Node b) -> bool { // lambda comparator func
-        return a.followers.size() > b.followers.size(); // if number of followers is bigger
-    };
-    sort(result.begin(), result.end(), comp); // sort graph by followers
-    return vector<Node>(result.begin(), result.begin() + cant); // return sorted vector
-
+    vector<Node> result = graph; // Se trabaja con el grafo completo
+    auto comp = [](Node a, Node b) -> bool { // Se crea una función comparadora.
+        return a.followers.size() > b.followers.size();}; // Si un nodo tiene más seguidores que 
+                                                          // el otro retorna verdadero.
+    sort(result.begin(), result.end(), comp); // Se ordena utilizando la función comparadora.
+    return vector<Node>(result.begin(), result.begin() + cant); // Retorna el grafo ordenado
 }
 
-
-vector<Node> Graph::topInfluenced(int n) { // Compute the n most influneced users (Useres following more people)
+vector<Node> Graph::topInfluenced(int n) { 
+// Entrega los n usuarios con más personas seguidas (Influyentes).
 
     for (Node i : graph) {
+    // Para cada nodo dentro del grafo.
         for (auto j: i.followers) {
-            j->following++; // If user appears in other user list of followers
+            j->following++; // Si el usuario aparece en otras listas se suma en su variable
+                            // following para llevar un conteo.
         }
     }
-    vector<Node> result = graph; // result vector
-    sort(result.begin(), result.end(),
-         [](Node a, Node b) -> bool { return a.following > b.following; }); // sorted by following field
-    return vector<Node>(result.begin(), result.begin() + n); // return sorted vector
+    vector<Node> result = graph; // Luego, con el grafo completo.
+    sort(result.begin(), result.end(), // Se ordena según la cantidad de cuentas que el usuario siga.
+         [](Node a, Node b) -> bool { return a.following > b.following; }); // De mayor a menor.
+    return vector<Node>(result.begin(), result.begin() + n); // Retorna el grafo ordenado.
 }
 
-void Graph::politicalTendencyCalc(str Magazine) { // Computes the political tendency for all user. BFS run
-    int node = ref.find(Magazine)->second; // Find node pos by id
+void Graph::politicalTendencyCalc(str Magazine) { 
+// Calcula la tendencia politica según el noticiero que se ingrese mediante BFS.
 
-    queue<Node> Q; // BFS queue
-    set<str> visited; // visited set
-    Node u = graph[node]; // Start node
-    u.polPow = 200.0; // Initial polPow
-    graph[node].politicalTendency[node] = 200.0;
-    Q.push(u); // Insert u into queue
-    //visited.insert(graph[node].id); // mark u as visited
-    visited.insert(graph[0].id);
+    int node = ref.find(Magazine)->second; // Se busca la posición en la tabla.
+    queue<Node> Q; // Lista de orden.
+    set<str> visited; // Set con usuarios visitados.
+    Node u = graph[node]; // Se toma la posición como nodo inicial.
+    u.polPow = 200.0; // Se entrega un valor igual a 200.
+    graph[node].politicalTendency[node] = 200.0; // Se inserta este valor en el nodo.
+    Q.push(u); // Se inserta el nodo en la lista de orden.
+    visited.insert(graph[0].id); 
     visited.insert(graph[1].id);
     visited.insert(graph[2].id);
     visited.insert(graph[3].id);
-    // Coloring the graph
-    while (!Q.empty()) { // While elements in queue
-        u = Q.front(); // u = first inserted element
+    // Se marcan los 4 noticieros como visitados incialmente.
 
-        Q.pop(); // extarct from queue
-        for (auto i : u.followers) { // for all the children
-            if (visited.find(i->id) == visited.end()) { // if the instance has not been visited yet
-                i->politicalTendency[node] = u.polPow /
-                                             2; // Assign half of the political power of his parent to the current political tendency
-                i->polPow = u.polPow / 2; // And to his own political power
-                Q.push(*i); // inert i to queue
-                visited.insert(i->id); // mark i as visitied
-
+    // Utilizando BFS para recorrer el grafo.
+    while (!Q.empty()) { // Mientras existan elementos en la lista.
+        u = Q.front(); // Toma al primer elemento.
+        Q.pop(); // Lo saca de la lista.
+        for (auto i : u.followers) { // Considera los seguidores de la cuenta
+            if (visited.find(i->id) == visited.end()) { 
+                // Si el nodo no ha sido visitado previamente.
+                i->politicalTendency[node] = u.polPow / 2; 
+                // Se le asigna la mitad del valor a sus seguidores.
+                i->polPow = u.polPow / 2; // Y la mitad del valor original a el mismo.
+                Q.push(*i); // Se insertan los seguidores a la lista de orden.
+                visited.insert(i->id); // Se marca este como visitado.
             }
-
         }
-
-
     }
-
-
 }
 
-// A dummy sum func
 double sum(vector<double> a) {
+// Función de suma por iterador.
     double res = 0;
     for (double j : a) {
         res += j;
@@ -127,105 +130,122 @@ double sum(vector<double> a) {
     return res;
 }
 
-vector<Node> Graph::influenceColorMap() { // Color all the graph by his political influence
-    politicalTendencyCalc("Cooperativa"); // left
-    politicalTendencyCalc("soyvaldiviacl"); // right
-    politicalTendencyCalc("latercera"); // center
-    politicalTendencyCalc("elmostrador"); // libertarian
+vector<Node> Graph::influenceColorMap() { 
+// Función encargada de colorear el grafo según la tendencia política.
+    politicalTendencyCalc("Cooperativa"); // Izquierda
+    politicalTendencyCalc("soyvaldiviacl"); // Derecha
+    politicalTendencyCalc("latercera"); // Centro
+    politicalTendencyCalc("elmostrador"); // Libertario
 
-    double s = 0; // sum
-    for (Node i : graph) { // for every node in graph
-        s = sum(i.politicalTendency); // sum his influences
+    double s = 0; // Variable encargada de la suma.
+    for (Node i : graph) {
+    // Para cada nodo del grafo.
+        s = sum(i.politicalTendency); // Se suman sus influencias.
         cout << " Political tendency " << i.id << ": ";
-        for (double j : i.politicalTendency) { // for every component in his political tendency
-            j = (j / s) * 100; // % of influence
-            cout << j << "% ";
+        // Se imprime los porcentajes del nombre del usuario.
+        for (double j : i.politicalTendency) { 
+            // Para cada componente en su vector de tendencia política.
+            j = (j / s) * 100; // Se calcula el porcentaje.
+            cout << j << "% "; // Se imprime junto al nombre.
         }
         cout << endl;
     }
-    return graph; // return the graph modified.
-
+    return graph; // Retorna el grafo modificado.
 }
 
-void Graph::DFSUtil(int pos, bool *visited) { // DFS computation for Kosaraju's SCC detection
-    visited[pos] = true; // set current node as visited
-    Node n = graph[pos];// create a node from pos
-    cout << n.id << " --->";
-    for (int i = 0; i < n.followers.size(); ++i) { // For every user in current vertex followers
-        if (!visited[n.followers[i]->pos]) { // if not vsited
-            DFSUtil(n.followers[i]->pos, visited);// recursive call with the current follower
+void Graph::DFSUtil(int pos, bool *visited) { 
+// DFS para recorrer los arcos entre los nodos.
+    visited[pos] = true; // Se indica el primer nodo como visitado.
+    Node n = graph[pos];// Se crea un nuevo nodo donde se guarda el grafo.
+    cout << n.id << " --->"; // Se imprime el usuario.
+    for (int i = 0; i < n.followers.size(); ++i) { 
+        // Todos los nodos adyacentes a este.
+        if (!visited[n.followers[i]->pos]) { // Si no ha sido visitado.
+            DFSUtil(n.followers[i]->pos, visited);
+            // Se llama recursivamente con este nuevo nodo.
         }
     }
 }
 
-void Graph::fillOrder(int pos, bool *visited, stack<Node> &s) { // Stack filling for Kosaraju's SCC detection
-    visited[pos] = true;                                          //  *****    *******     *******
-    Node n = graph[pos];                                         //   *    *   *           *
-    for (int i = 0; i < n.followers.size(); ++i) {              //    *     *  *****       *
-        if (!visited[n.followers[i]->pos]) {                   //     *    *   *           *
-            fillOrder(n.followers[i]->pos, visited, s);    //      *****    *      ******
+void Graph::fillOrder(int pos, bool *visited, stack<Node> &s) {
+// Rellenado de un stack con Kosaraju.
+    visited[pos] = true; // Se indica el usuario de esta posición como visitado.                                          
+    Node n = graph[pos]; // Se crea un nuevo nodo.
+    for (int i = 0; i < n.followers.size(); ++i) {           
+    // Con la totalidad de seguidores. 
+        if (!visited[n.followers[i]->pos]) {      
+        // Si no han sido visitados.          
+            fillOrder(n.followers[i]->pos, visited, s);  
+            // Se asigna el nuevo nodo como la posición.
         }
     }
-    s.push(n); // When DFS ends, push into stack
+    s.push(n); // Cuando acaba el DFS, se ingresa todo el nuevo nodo al stack.
 }
 
-int Graph::Kosaraju() { // Kosaraju's SCC Detection
-    stack<Node> s; // stack needed
-    bool *visited = new bool[graph.size()]; // visited bool array
+int Graph::Kosaraju() { 
+// Detección de conjuntos fuertemente conexos utilizando Kosaraju.
+
+    stack<Node> s; // Se necesita de un stack.
+    bool *visited = new bool[graph.size()]; // Se crea un arreglo donde se
+                                            // indican los nodos visitados.
     for (int i = 0; i < graph.size(); ++i) {
-        visited[i] = false; // all to false
+    // Para la totalidad de los nodos.
+        visited[i] = false; // Se indica que no se han visitado.
     }
 
     for (int i = 0; i < graph.size(); ++i) {
-        if (visited[i] == false)
-            fillOrder(graph[i].pos, visited, s); // fill the stack
+    // Para la totalidad de los nodos.
+        if (visited[i] == false) {
+            fillOrder(graph[i].pos, visited, s); // Llena el stack con los
+                                                // nodos no visitados.
+        }
     }
 
-    Graph T = this->transpose(); // get reverse
+    Graph T = this->transpose(); // Se aplica inversión al grafo.
 
     for (int i = 0; i < graph.size(); ++i) {
-        visited[i] = false; // set to false for inverse dfs
+    // Para la totalidad de los nodos.
+        visited[i] = false; // Se vuelve al estado original.
     }
-    int k = 0;
-    while (!s.empty()) { // While elemnts in stack
-        Node v = s.top(); // get top
-
-        s.pop(); // Pop
+    int k = 0; // Se crea un contador.
+    while (!s.empty()) { 
+    // Mientras existan elementos en el stack.
+        Node v = s.top(); // Se obtiene el elemento superior del stack.
+        s.pop(); // Se libera.
         if (visited[v.pos] == false) {
+        // Si este nodo no fue visitado.
             cout << "SCC: ";
-            T.DFSUtil(v.pos, visited); // Inverse DFS
+            T.DFSUtil(v.pos, visited); 
+            // Se aplica la búsqueda con el nodo inverso.
             cout << endl;
             k++;
         }
     }
     return k;
-
+    // Regresa la cantidad de conjuntos fuertemente conexos.
 }
 
-
-Graph Graph::transpose() { // Compute the inverse graph
-    Graph T;
+Graph Graph::transpose() { 
+// Invierte el grafo para uso en Kosaraju.
+    Graph T; // Se crea un nuevo grafo.
     for (int i = 0; i < graph.size(); ++i) {
-        T.graph.push_back(graph[i]); // Copy graph
-        T.graph[i].following = 0; // without following
-        T.graph[i].followers.clear(); // without followers
+        T.graph.push_back(graph[i]); // Se copia el grafo
+        T.graph[i].following = 0; // Sin seguidores
+        T.graph[i].followers.clear(); // Sin usuarios seguidos.
     }
-
 
     for (Node i : graph) {
         for (Node *j : i.followers) {
-            T.graph[j->pos].followers.push_front(&T.graph[i.pos]); // Become followers in followees
+            T.graph[j->pos].followers.push_front(&T.graph[i.pos]);
+            // Ingresamos los previos seguidores como seguidos.
         }
     }
 
-
-    return T; //  return graph
-
+    return T; // Retornamos el nuevo grafo.
 }
 
-void Graph::print() { // print graph
-
-
+void Graph::print() { 
+// Se encarga de mostrar las conexiones del grafo.
     for (auto i : graph) {
         cout << i.id << " --> ";
         for (auto j : i.followers) {
@@ -236,9 +256,9 @@ void Graph::print() { // print graph
 
 }
 
-int Graph::size() { return graph.size(); } // returns the number of vertexes in graph
+int Graph::size() { return graph.size(); } // Retorna la cantidad de nodos.
 
-void Graph::exportGraph(str path) { // exports graph as txt (For Python isualization)
+void Graph::exportGraph(str path) { // Exporta el grafo a un archivo de texto
     ofstream f(path + "/Origins.txt");
     for (auto i : graph) {
         for (auto j : i.followers) {
@@ -258,11 +278,9 @@ void Graph::exportGraph(str path) { // exports graph as txt (For Python isualiza
     f.close();
 }
 
-void Graph::computeStats() { // Compute stats
-    int mix = 0; // mix count
-    // NOTE: If a user has the same levels of influence from left and libertarian will be counted as left
-    // The same applies for right and center
-    // If has the same level for opposite tendencies will be counted as mix.
+void Graph::computeStats() {
+// Cálculo de la totalidad de la influencia política.
+    int mix = 0; // Variable donde se almacenarán aquellos usuarios con igual cantidad de influencia máxima.
     int left = count_if(graph.begin(), graph.end(), [](Node a) -> bool { // using for count if
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end()); // extracting the stronger tendency
 
