@@ -281,42 +281,42 @@ void Graph::exportGraph(str path) { // Exporta el grafo a un archivo de texto
 void Graph::computeStats() {
 // Cálculo de la totalidad de la influencia política.
     int mix = 0; // Variable donde se almacenarán aquellos usuarios con igual cantidad de influencia máxima.
-    int left = count_if(graph.begin(), graph.end(), [](Node a) -> bool { // using for count if
-        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end()); // extracting the stronger tendency
-
+    int left = count_if(graph.begin(), graph.end(), [](Node a) -> bool { 
+        double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end()); 
+        // Se extrae la tendencia política más grande entre el vector.
         return max == a.politicalTendency[0] && max != a.politicalTendency[1] && max != a.politicalTendency[2]
-             && max != a.politicalTendency[3]; // return true if left is higher
+             && max != a.politicalTendency[3]; // Regresa verdadero si domina la postura izquierda.
     });
 
     int libert = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
         return max == a.politicalTendency[3] && max != a.politicalTendency[0] && max != a.politicalTendency[2]
-                && max != a.politicalTendency[1];
+                && max != a.politicalTendency[1]; // Del mismo modo, regresa verdadero si domina la postura liberal.
     });
 
     int right = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
         return max == a.politicalTendency[1] && max != a.politicalTendency[2] && max != a.politicalTendency[0]
-               && max != a.politicalTendency[3];
+               && max != a.politicalTendency[3]; // Del mismo modo, regresa verdadero si domina la postura derechista.
     });
 
     int center = count_if(graph.begin(), graph.end(), [](Node a) -> bool {
         double max = *max_element(a.politicalTendency.begin(), a.politicalTendency.end());
         return max == a.politicalTendency[2] && max != a.politicalTendency[1] && max != a.politicalTendency[3]
-               && max != a.politicalTendency[0];
+               && max != a.politicalTendency[0]; // Del mismo modo, regresa verdadero si domina la postura central.
     });
     
-    // Print percentages
     cout << "left: " << (double(left) / double(graph.size())) * 100 << "%." << endl;
     cout << "libertarian: " << (double(libert) / double(this->size())) * 100 << "%." << endl;
     cout << "right: " << (double(right) / double(this->size())) * 100 << "%." << endl;
     cout << "center: " << (double(center) / double(this->size())) * 100 << "%." << endl;
     mix = this->size() - (left + right + libert + center);
     cout << "mix: " << (double(mix) / double(this->size()) * 100) << "%\n";
-
+    // Muestra los porcentajes de las tendencias en porcentaje sobre el total de usuarios.
 }
 
 void Graph::exportTendencies(str path) {
+// Exporta las tendencias de los nodos a un archivo de texto.
     ofstream f(path + "/Tendencies.txt");
     for (auto i : graph) {
         f << i.politicalTendency[0];
@@ -331,26 +331,32 @@ void Graph::exportTendencies(str path) {
     }
 }
 
-void Graph::getGraphSize() { // Cmputes the graf sizes in MB
-    int content = sizeof(Graph); // Graph container size (Includes all memebers in raph class)
-    int graphS = sizeof(Node) * graph.size(); // Espace consumed for the vertexes in graph.
-    int insider = 0; // Espace consumed for the edges in graph
+void Graph::getGraphSize() { 
+// Calcula el tamaño del grafo total en MBs
+    int content = sizeof(Graph); // Incluye todo el contenido del grafo
+    int graphS = sizeof(Node) * graph.size(); // Esoacio utilizado por nodos
+    int insider = 0; // Espacio consumido por los arcos entre nodos
     for (int i = 0; i < graph.size(); ++i) {
-        insider += sizeof(Node *) * graph[i].followers.size(); // cont the followers of every node
+        insider += sizeof(Node *) * graph[i].followers.size(); 
+        // Esto se logra contando la cantidad de seguidores.
     }
 
-    cout << "Struct size: " <<  float (content + graphS + insider) / 1000000 << " MBs.\n"; // return MBs
+    cout << "Struct size: " <<  float (content + graphS + insider) / 1000000 << " MBs.\n"; 
+    // Retorna la suma total en MBs
 }
 
 Node Graph::returnNode(int n) {
+// Regresa el nodo del grafo por posición
     return graph[n];
 }
 
 Node Graph::returnNode(str id) {
+// Regresa el nodo del grafo por nombre de usuario.
     return graph[ref.find(id)->second];
 }
 
 int Graph::findIsland() {
+// Busca si existe algun nodo que no siga a nadie.
     this->topInfluenced(0);
     uint k;
     for (Node i : this->graph){
@@ -358,12 +364,7 @@ int Graph::findIsland() {
             k++;
         }
     }
-
-    return k;
+    return k; // Retorna cantidad.
 }
 
-
-
-Graph::~Graph() {
-
-}
+Graph::~Graph() {}; // Destructor.
