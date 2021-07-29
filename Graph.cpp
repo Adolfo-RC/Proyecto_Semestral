@@ -92,7 +92,7 @@ void Graph::politicalTendencyCalc(str Magazine) {
 // Calcula la tendencia politica según el noticiero que se ingrese mediante BFS.
 
     int node = ref.find(Magazine)->second; // Se busca la posición en la tabla.
-    queue<Node> Q; // Lista de orden.
+    queue<Node> Q; // Cola de orden.
     set<str> visited; // Set con usuarios visitados.
     Node u = graph[node]; // Se toma la posición como nodo inicial.
     u.polPow = 200.0; // Se entrega un valor igual a 200.

@@ -89,6 +89,8 @@ int main() {
     cout << "Graph size\n";
     // Tamaño total del grafo.
     tweet.getGraphSize();
+
+    // Todos los cálculos temporales realizados no consideran el tiempo de impresión.
     
     return 0; // Fin.
 }
