@@ -1,4 +1,5 @@
-# Proyecto Semestral - Eric Primelles & Claudio Rioseco - Universidad de Concepción
+# Proyecto Semestral 
+Creado por: Eric Primelles & Claudio Rioseco 
 
 El presente repositorio corresponde al proyecto semestral final de la asignatura Fundamentos de Estructuras de Datos y Algoritmos S1-2021.
 
